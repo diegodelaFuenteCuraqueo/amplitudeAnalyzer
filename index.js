@@ -27,6 +27,7 @@ app.get('/', (req, res) => {
 
 // this route is used to upload a media and receive an analysis object
 app.post('/analyze', async (req, res) => {
+  console.log("/analyze", req, res)
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");
   }
