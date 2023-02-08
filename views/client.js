@@ -8,8 +8,6 @@ inputBtn.addEventListener("change", (event) => {
   console.log("inputBtn changed", event)
   const file = inputBtn.files[0];
   console.log("file", file)
-  //window.analysis = {}
-  
 
   try {
     video.src = URL.createObjectURL(file)

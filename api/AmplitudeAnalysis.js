@@ -3,6 +3,7 @@ const ffmpeg = require('fluent-ffmpeg')
 /**
  * Analyzes the amplitude of an audio/video file
  * @param {string} inputFile - path to the input file
+ * @param {object} config - configuration object (optional)
  * @returns {Promise} - resolves to an object containing the amplitude data
  */
 getAmplitudeArray = (inputFile, config = {}) => {

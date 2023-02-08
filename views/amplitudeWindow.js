@@ -2,7 +2,6 @@
 /**
  * Draws amplitude data timeline on the canvas
  */
-
 new p5(function (p) {
   p.setup = function () {
     p.createCanvas(700, 100)
