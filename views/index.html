@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/addons/p5.sound.min.js"></script>
 
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,23 +27,26 @@
     </form>
   </div>
 
-  <video id="video" width="100%"></video>
-  <div id="data">
-    <table width="100%">
-      <tr>
-      </tr>
-      <tr>
-        <td>Duration</td>
-        <td id="duration"></td>
-      <tr>
-        <td>Scene Spots</td>
-        <td id="sceneSpots"></td>
-      </tr>
-      <tr>
-        <td>Audio Spots</td>
-        <td id="audioSpots"></td>
-      </tr>
-    </table>
+  <div class="container">
+    <video id="video" width="700px" controls style="text-align:center;"></video>
+    <div id="data">
+      <table width="width:700px">
+        <tr style="border:1px solid black;text-align:center">
+          <div id="canvas" style="width:700px;height:100px">  </div>
+        </tr>
+        <tr>
+          <td>Dynamic Range</td>
+          <td id="dynamicRange"></td>
+        <tr>
+          <td>Max RMS (dB)</td>
+          <td id="maxRMS"></td>
+        </tr>
+        <tr>
+          <td>Min RMS (dB)</td>
+          <td id="minRMS"></td>
+        </tr>
+      </table>
+    </div>
   </div>
 
   <div id="content"></div>
@@ -64,6 +69,85 @@
         console.log("setting video sr c", localStorage.getItem("mediaUrl") || "")
         video.src = localStorage.getItem("mediaUrl") || ""
       }
+
+      let analysis = {
+      }
+
+      fetch("/data")
+        .then((response) => response.json())
+        .then((data) => {
+          window.analysis = data
+          console.log("data", analysis)
+          document.getElementById("dynamicRange").innerHTML = data.dynamicRange
+          document.getElementById("maxRMS").innerHTML = data.maxRMS
+          document.getElementById("minRMS").innerHTML = data.minRMS
+
+          window.ampArray = data.frames.map((frame) => {
+            return {
+              RMS: frame.RMS,
+              time: frame.time
+            }
+          })
+        })
+
+        video.addEventListener("timeupdate",
+          (event) => {
+            window.currentTime = event.srcElement.currentTime
+            amplitudeFrame = window.ampArray.find((amp) => {
+              if(amp.time > window.currentTime && amp.time < window.currentTime + 0.5) {
+                //console.log("amp", amp)
+                return true
+              } else {
+                return false
+              }
+            })
+            console.log(amplitudeFrame.RMS)
+            if (amplitudeFrame.RMS < -45) {
+              document.getElementById("minRMS").style.backgroundColor = "red"
+            } else {
+              document.getElementById("minRMS").style.backgroundColor = "white"
+            }
+          }
+        )
+  </script>
+
+  <script>
+
+    new p5(function (p) {
+      p.setup = function () {
+        p.createCanvas(700, 100);
+      };
+
+      p.draw = function () {
+        p.background(0,0,0);
+        if(!window.ampArray) return
+
+        for(let i = 0; i < window.ampArray.length; i++) {
+          //console.log("window.ampArray[i]", window.ampArray[i])
+          const amp = window.ampArray[i].RMS
+          const time = window.ampArray[i].time
+          p.strokeWeight(1)
+
+          p.fill(255);
+          p.stroke(0,255,0);
+          const mappedTime = p.map(time, 0, window.ampArray[window.ampArray.length-1].time, 0, 700)
+          const mappedAmp = p.map(amp, window.analysis.minRMS, window.analysis.maxRMS, 0, 100)
+          p.line(mappedTime, 100, mappedTime, mappedAmp)
+
+          try {
+            const mappedCursor = p.map(window.currentTime, 0, window.ampArray[window.ampArray.length-1].time, 0, 700)
+            //console.log(mappedAmp)
+            p.stroke(255,0,0,1);
+            p.strokeWeight(5)
+            p.line(mappedCursor, 0, mappedCursor, 100)
+          } catch (error) {
+            console.log("error", error)
+          }
+        }
+      };
+    }, "canvas");
+
+
   </script>
 </body>
 </html>

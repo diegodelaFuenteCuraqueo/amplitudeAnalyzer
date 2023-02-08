@@ -6,7 +6,7 @@ getAmplitudeArray = inputFile => {
     let frameData = {}
 
     ffmpeg(inputFile)
-    .addOption('-af', 'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level')
+    .addOption('-af', 'astats=metadata=1:reset=1:length=0.2,ametadata=print:key=lavfi.astats.Overall.RMS_level')
     .addOption('-f', 'null')
     .output('/dev/null')
     .on("start", commandLine => console.log("FFMPEG command: " + commandLine))
@@ -35,7 +35,12 @@ getAmplitudeArray = inputFile => {
       ampData.minRMS = minValue
       ampData.maxRMS = maxValue
       ampData.dynamicRange = Math.abs(maxValue - minValue)
-      resolve(ampData)
+      resolve({
+        frames: ampData,
+        minRMS: minValue,
+        maxRMS: maxValue,
+        dynamicRange: Math.abs(maxValue - minValue)
+      })
     })
     .run();
   })

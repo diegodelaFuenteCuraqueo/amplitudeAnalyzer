@@ -5,6 +5,8 @@ const bodyParser = require('body-parser')
 const { getAmplitudeArray } = require('./api/AmplitudeAnalysis')
 const fs = require('fs')
 
+let mediaData = {}
+
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(
@@ -16,10 +18,9 @@ app.use(
 
 // routes
 app.get('/', (req, res) => {
+  mediaData = {}
   return res.sendFile(__dirname + '/views/index.html')
 })
-
-let mediaData = {}
 
 app.post('/analyze', /* upload.single("file"), */ async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
@@ -35,6 +36,7 @@ app.post('/analyze', /* upload.single("file"), */ async (req, res) => {
 
   await getAmplitudeArray("tmp/" + file.name)
   .then((_data) => {
+    mediaData = {}
     mediaData = _data
     console.log("DATA", mediaData)
     fs.unlink("tmp/" + file.name, (err) => {
@@ -48,8 +50,13 @@ app.post('/analyze', /* upload.single("file"), */ async (req, res) => {
   return res.sendFile(__dirname + '/views/index.html')
 })
 
+app.get('/data', (req, res) => {
+  if(JSON.stringify(mediaData) === '{}') return res.status(404).send({ message: "No data found" })
+  return res.json(mediaData)
+})
+
 // start
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 9090
 app.listen(port, () => {
   console.log("listening to port " + port)
 })
