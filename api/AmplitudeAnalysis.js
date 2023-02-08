@@ -1,15 +1,15 @@
 const ffmpeg = require('fluent-ffmpeg')
 
-function getAmplitudeArray(inputFile) {
+getAmplitudeArray = inputFile => {
   return new Promise((resolve, reject) => {
     const ampData = []
     let frameData = {}
 
-    const cmd = new ffmpeg(inputFile)
+    ffmpeg(inputFile)
     .addOption('-af', 'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level')
     .addOption('-f', 'null')
     .output('/dev/null')
-    .on("start", commandLine => console.log("Ffmpeg command: " + commandLine))
+    .on("start", commandLine => console.log("FFMPEG command: " + commandLine))
     .on("error", err => reject(err))
     .on("stderr", stderrLine => {
       if(stderrLine.includes("frame:")) {
@@ -30,7 +30,7 @@ function getAmplitudeArray(inputFile) {
 
       const maxValue = ampData.reduce((max, obj) => {
         return obj.RMS > max ? obj.RMS : max;
-      }, ampData[0].RMS);
+      }, -Infinity);
 
       ampData.minRMS = minValue
       ampData.maxRMS = maxValue
@@ -40,10 +40,5 @@ function getAmplitudeArray(inputFile) {
     .run();
   })
 }
-
-getAmplitudeArray("../dance.mp4")
-  .then((data) => {
-    console.log("DATA", data)
-})
 
 module.exports = { getAmplitudeArray }

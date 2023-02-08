@@ -7,61 +7,63 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <title>Automarkers</title>
+  <title>Amplitude Analyzer</title>
 </head>
 <body>
   <div class="container">
     <h1 style="text-align:center;">Amplitude analyzer</h1>
     <form action="/analyze" method="post" enctype="multipart/form-data">
-    <div class="form-group">
-      <input type="file" name="file" />
-    </div>
-    <br />
-    <div class="form-group">
-      <button class="btn btn-danger btn-block">
-        Analizar
-      </button>
+      <div class="form-group">
+        <input type="file" name="file" id="file" />
       </div>
-    </div>
+      <br />
+      <div class="form-group">
+        <button class="btn btn-danger btn-block" id="submit">
+          Analizar
+        </button>
+      </div>
     </form>
+  </div>
+
+  <video id="video" width="100%"></video>
+  <div id="data">
+    <table width="100%">
+      <tr>
+      </tr>
+      <tr>
+        <td>Duration</td>
+        <td id="duration"></td>
+      <tr>
+        <td>Scene Spots</td>
+        <td id="sceneSpots"></td>
+      </tr>
+      <tr>
+        <td>Audio Spots</td>
+        <td id="audioSpots"></td>
+      </tr>
+    </table>
   </div>
 
   <div id="content"></div>
   <script>
-      const input = document.getElementsByName("file")[0];
+      const input = document.getElementsByName("file")[0]
+      const submit = document.getElementById("submit")
+      const video = document.getElementById("video")
       input.addEventListener("change", (event) => {
-        //event.preventDefault()
-        const file = event.target.files[0];
+        console.log("input changed", event)
+        const file = input.files[0];
         window.mediaUrl = URL.createObjectURL(file);
-        console.log("input change:", window.mediaUrl, file)
-        console.log(event)
-        console.log("if", input.files[0])
-
-        const formData = new FormData();
-
-        formData.append('file', input.files[0]);
-        formData.append('ola', 'oli');
-        for (var key of formData.entries()) {
-          console.log(key[0] + ', ' + key[1]);
-        }
-
-        //const url = "http://localhost:3000/analyze"
-
-        //fetch(url, {
-        //  method: 'POST',
-        //  body: formData,
-        //  headers: {
-        //    'Content-Type': 'multipart/form-data'
-        //  }
-        //})
-        //.then(response => response.json())
-        //.then(data => console.log(data))
-        //.catch(error => console.error(error));
-
+        console.log("file", file)
+        console.log("window.mediaUrl", window.mediaUrl)
+        video.src = window.mediaUrl || ""
+        // Save data to localStorage
+        localStorage.setItem("mediaUrl", window.mediaUrl);
       })
 
-
-
+      window.onload = () => {
+        console.log("setting video sr c", localStorage.getItem("mediaUrl") || "")
+        video.src = localStorage.getItem("mediaUrl") || ""
+      }
   </script>
 </body>
 </html>
