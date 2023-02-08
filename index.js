@@ -4,6 +4,7 @@ const app = express()
 const bodyParser = require('body-parser')
 const { getAmplitudeArray } = require('./api/AmplitudeAnalysis')
 const fs = require('fs')
+const path = require('path')
 
 let mediaData = {}
 
@@ -15,6 +16,8 @@ app.use(
     tempFileDir: "/tmp/",
   })
 )
+app.use(express.static(path.join(__dirname + '/views')));
+
 
 // routes
 app.get('/', (req, res) => {
@@ -22,7 +25,8 @@ app.get('/', (req, res) => {
   return res.sendFile(__dirname + '/views/index.html')
 })
 
-app.post('/analyze', /* upload.single("file"), */ async (req, res) => {
+// this route is used to upload a media and receive an analysis object
+app.post('/analyze', async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");
   }
